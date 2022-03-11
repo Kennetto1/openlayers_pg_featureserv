@@ -1,0 +1,28 @@
+@import "node_modules/ol/ol.css";
+
+html, body {
+  margin: 0;
+  height: 100%;
+}
+#map {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 100%;
+}
+
+.olControlPanel {
+  top: 50%;
+  left: 3.5%;
+  height: 18px;
+  width: 18px;
+/*    border: 1px solid black;*/
+  cursor: pointer;
+  }
+
+.olControlBtnHiLiteItemActive {  
+  position: absolute;
+  height: 18px;
+  width : 18px;
+  background: url('http://s11.postimg.org/s3u0s4pjj/marker.png') no-repeat center;
+}
