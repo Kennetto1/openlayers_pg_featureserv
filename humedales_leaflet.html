@@ -1,0 +1,281 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>Tendencias de humedad por pixel en el periodo 2000-2020</title>
+<meta name="title" content="Tendencias de humedad por pixel en el periodo 2000-2020">
+<meta name="description" content="Mapa de tendencias de humedad por pixel en el periodo 2000-2020. SPR.CONABIO. 2022">
+<meta name="keywords" content="humedales, wetland, wetlands, conabio, tendencias">
+<meta name="robots" content="index, follow">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta name="language" content="Spanish">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.6.0/dist/leaflet.css" integrity="sha512-xwE/Az9zrjBIphAcBb3F6JVqxf46+CDLwfLMHloNu6KEQCAWi6HcDUbeOfBIptF7tcCzusKFjFw2yuvEpDL9wQ==" crossorigin=""/>
+
+    <script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js" integrity="sha512-gZwIG9x3wUXg2hdXF6+rVkLF/0Vi9U8D2Ntg4Ga5I5BZpVkVxlJWbSQtXPSiUTtC0TjtGOmxa1AJPuV0CPthew==" crossorigin=""></script>
+ 
+    <link rel="stylesheet" type="text/css" href="L.Control.ZoomBar.css"/>
+    <script type="text/javascript" src="L.Control.ZoomBar.js"></script>
+	<script>type="text/javascript" src="topojson.js"</script>
+	<style>
+		html, body {
+			width: 100vw;
+			height: 100vh;
+			margin: 0;
+		}
+	</style>
+<!-- Parámetros globales para las div, se cambian para hacer el mapa al 100% de la ventana #map { width: 100%; height: 100%;-->
+<!-- Parámetros que cambian el aspecto de la leyenda;-->
+		<style>#map { width: 685px; height: 350px; } 
+.info { padding: 6px 8px; font: 10px/12px Arial, Helvetica, sans-serif; background: white; background: rgba(255,255,255,1); box-shadow: 0 0 15px rgba(0,0,0,0.2); border-radius: 5px; } 
+.info h4 { margin: 0 0 5px; color: #777; }
+.legend { text-align: left; line-height: 10px; color: #555; opacity: 0.75; width: 120px; height: 85px;  } 
+.legend i { width: 15px; height: 15px; float: left; margin-right: 8 px; opacity: 1; }
+.legend2 { text-align: left; line-height: 10px; color: #555; opacity: 0.75; width: 120px; height: 125px;  } 
+.legend2 i { width: 15px; height: 15px; float: left; margin-right: 8 px; opacity: 1; }
+
+</style>
+
+
+</style>
+
+</head>
+<body>
+
+
+<div id='map'></div>
+<script type="text/javascript" src="data/edos_tendencia_humedales_0.js"></script>
+<script type="text/javascript" src="data/Hum_tend_1clase_zoom_min_2020.js"></script>
+<script type="text/javascript" src="data/Hum_tend_4clases_zoom_inter_2020.js"></script>
+<script type="text/javascript" src="data/Hum_tend_4clases_zoom_max_completo_2020.js"></script>
+
+
+
+<script type="text/javascript">
+
+    var map = L.map('map', {
+	                zoomSnap: 0.25,
+                    minZoom:4.50, //Controla el zoom máximo
+                    maxZoom:11.5, //Controla el zoom mínimo
+                    zoomControl: false
+					}).setView([23.4, -98.70], 4.40); //Los dos primeros valores cambian el punto central inicial del mapa, el tercer valor cambia el zoom inicial
+
+  var zoom_bar = new L.Control.ZoomBar({ position: 'topleft' }).addTo(map);
+
+	L.tileLayer('https://api.mapbox.com/styles/v1/kennett01/ckzspelzv000h15lcjqooqfpw/tiles/256/{z}/{x}/{y}@2x?access_token=pk.eyJ1Ijoia2VubmV0dDAxIiwiYSI6ImNrMnNrOTg3dzBiNWEzZHFjeW9oc292ZTUifQ.hWrOvbRd_Tp4suqaeZO0-Q', {
+		maxZoom: 10,
+		attribution: '© <a href="https://www.mapbox.com/">Mapbox</a>'
+	}).addTo(map);
+	
+
+		// Controla lo que se muestra al pasar el cursor encima
+	var info = L.control();
+	
+
+	info.onAdd = function (map) {
+		this._div = L.DomUtil.create('div', 'info');
+		this.update();
+		return this._div;
+	};
+
+		info.update = function (props) {
+		this._div.innerHTML = '<h4>Tendencia de humedad</h4>' +  (props ?
+			'<b>' + props.Nom_ent + '</b><br/><br/>' + '<b>'+'Tendencias negativas: '+'</b> '+props.ha_A+ ' ha'+ '<br />' +'<b>'+'Tendencias cercanas a 0: '+'</b> '+props.ha_B+ ' ha'+ '<br />' +'<b>'+'Tendencias positivas: '+ '</b> '+props.ha_C+' ha'+ '<br />' +'<b>'+'Humedales sin tendencia: '+ '</b> '+props.ha_D+' ha'
+			: 'Pasa el puntero sobre un estado');0
+	};
+
+	info.addTo(map);
+
+		// Controla el resaltado cuando se pasa el cursor encima
+	function highlightFeature(e) {
+		var layer = e.target;
+
+		layer.setStyle({
+			weight: 1.5,
+			color: '#878787',
+			dashArray: '',
+			fillOpacity: 0.0
+		});
+
+		if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) {
+			layer.bringToFront();
+		}
+
+		info.update(layer.feature.properties);
+	}
+		// Se limpia el resaltado
+var estados;
+
+	function resetHighlight(e) {
+		estados.resetStyle(e.target);
+		info.update();
+	}
+		//Función para acercar al hacer click sobre un polígo
+	function zoomToFeature(e) {
+		map.fitBounds(e.target.getBounds());
+	}
+		//Se agrupan las funciones
+	function onEachFeature(feature, layer) {
+		layer.on({
+			mouseover: highlightFeature,
+			mouseout: resetHighlight,
+            rinseOnHover: true,
+			click: zoomToFeature
+		});
+	}
+		//Se asigna el grupo de funciones a la capa de estados
+	estados = L.geoJson(json_edos_tendencia_humedales_0, {
+		style: style,
+		onEachFeature: onEachFeature
+	})
+	.addTo(map);
+	map.on('zoomend', function() { //Función para quitar la capa de estados cuando el zoom es mayor a 6
+		if (map.getZoom() >6){
+		map.removeLayer(estados);
+	}
+		else {
+		map.addLayer(estados);
+    }	
+	
+   });
+		
+
+
+	//Código para modificar los créditos y link 
+map.attributionControl.addAttribution('Tendencias de humedad &copy; <a href="https://www.biodiversidad.gob.mx/monitoreo/smmm/extensionDist">CONABIO</a>');
+
+   //Inicial las leyendas 
+var legend = L.control({position: 'bottomright'});
+
+	legend.onAdd = function (map) {
+
+		var div = L.DomUtil.create('div', 'info legend');
+		div.innerHTML +='<p style="font-size:160;"><b>Mapa de tendencias<br> de humedad</b></p>';
+		div.innerHTML += '<i style="background: #2AAAFF"></i><p>&nbspHumedales</p>';
+		div.innerHTML += '<i style="background: #FFFFFF; outline: 1px solid; outline-color:#878787"></i><p>&nbspEstados de la &nbsprepública mexicana</p>';
+		
+		return div;
+	};
+
+var legend2 = L.control({position: 'bottomright'});
+
+	legend2.onAdd = function (map) {
+
+		var div = L.DomUtil.create('div', 'info legend2');
+		div.innerHTML +='<p style="font-size:160;"><b>Mapa de tendencias<br> de humedad</b></p>';
+		div.innerHTML += '<i style="background: #267300"></i><p>&nbspTendencia positiva</p>';
+		div.innerHTML += '<i style="background: #FFFF00"></i><p>&nbspTendencia cercana a 0</p>';
+		div.innerHTML += '<i style="background: #A80000"></i><p>&nbspTendencia negativa</p>';
+		div.innerHTML += '<i style="background: #89AFD5"></i><p>&nbspHumedales sin &nbsptendencia</p>';
+		return div;
+	};
+
+
+
+legend.addTo(map);	
+
+
+map.on('zoomend', onZoomend);
+	function onZoomend(){
+		if(map.getZoom()> 5.5){  
+		map.removeControl(legend);
+		legend2.addTo(map);
+		}
+		else{
+		legend.addTo(map);
+		map.removeControl(legend2);
+		}
+    };
+	
+
+
+
+	var humedalessincambio= new L.geoJson(json_Hum_tend_1clase_zoom_min_2020_0, {
+	
+							fillColor: "#6699CD",
+							 opacity: 1,
+							 fillOpacity: 0.75,
+							 color:"6699CD",
+							 weight: 1
+							 })
+.addTo(map);
+
+
+	function getColor(d) {
+	    return d > 1 ? '#89AFD5' :
+				d > 0 ? '#267300' :
+				d > -1 ? '#FFFF00' :
+				d < 0 ? '#A80000' :
+					    'rgba(0,0,0,0)';
+	}
+
+	
+	
+function style(feature) {
+		return {
+			weight: 0.4,
+			opacity: 1,
+			color: getColor(feature.properties.gridcode),
+			fillOpacity: 1,
+			fillColor: getColor(feature.properties.gridcode)
+		};
+	}
+
+
+	var tendenciahumedales= new L.geoJson(json_Hum_tend_4clases_zoom_inter_2020_0, {
+					style: style
+		})
+
+	map.on('zoomend', function() {
+		if (map.getZoom() <6){
+		map.removeLayer(tendenciahumedales);
+	}
+		else {
+		map.addLayer(tendenciahumedales);
+    }	
+	
+   });
+
+   var tendenciahumedales2= new L.geoJson(json_Hum_tend_4clases_zoom_max_completo_2020_0, {
+					style: style
+		})
+
+	map.on('zoomend', function() {
+		if (map.getZoom() <10){
+		map.removeLayer(tendenciahumedales2);
+	}
+		else {
+		map.addLayer(tendenciahumedales2);
+    }	
+	
+   });
+   
+
+/*
+var marker2 = L.marker([18.57662401453212, -92.17714259665728],{}).addTo(map);
+ marker2.on('click', function(e) {
+      map.setView(e.latlng, 16);      
+})
+*/
+/*
+var baseLayers = {
+		'Cuerpos de agua': waterbodies
+	};
+
+
+	
+var overlays = {
+		'Tendencia de humedad': tendenciahumedales,
+		'Humedales sin cambio': humedalessincambio
+	};
+
+	var layerControl = L.control.layers(baseLayers, overlays).addTo(map);
+*/
+
+</script>
+
+
+
+</body>
+</html>
+

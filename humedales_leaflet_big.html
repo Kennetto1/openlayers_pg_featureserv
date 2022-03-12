@@ -1,0 +1,235 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+	
+	<title>Distribución y extensión de los manglares en México</title>
+
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	
+	<link rel="shortcut icon" type="image/x-icon" href="images/favicon.ico" />
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.6.0/dist/leaflet.css" integrity="sha512-xwE/Az9zrjBIphAcBb3F6JVqxf46+CDLwfLMHloNu6KEQCAWi6HcDUbeOfBIptF7tcCzusKFjFw2yuvEpDL9wQ==" crossorigin=""/>
+
+    <script src="https://unpkg.com/leaflet@1.6.0/dist/leaflet.js" integrity="sha512-gZwIG9x3wUXg2hdXF6+rVkLF/0Vi9U8D2Ntg4Ga5I5BZpVkVxlJWbSQtXPSiUTtC0TjtGOmxa1AJPuV0CPthew==" crossorigin=""></script>
+ 
+    <link rel="stylesheet" type="text/css" href="L.Control.ZoomBar.css"/>
+    <script type="text/javascript" src="L.Control.ZoomBar.js"></script>
+	<style>
+		html, body {
+			width: 100%;
+			height: 100%;
+			margin: 0;
+		}
+		#map {
+			width: 100%;
+			height: 100%;
+		}
+	</style>
+<!-- Parámetros para hacer el mapa al 100% de la ventana #map { width: 100%; height: 100%;-->
+<!-- Parámetros que cambian el aspecto de la leyenda;-->
+		<style>#map { width: 100%; height: 100%; } 
+.info { padding: 6px 8px; font: 10px/12px Arial, Helvetica, sans-serif; background: white; background: rgba(255,255,255,1); box-shadow: 0 0 15px rgba(0,0,0,0.2); border-radius: 5px; } .info h4 { margin: 0 0 5px; color: #777; }
+.legend { text-align: right; line-height: 10px; color: #555; opacity: 0.75; width: 100px; height: 150px;  } 
+.legend2 { text-align: right; line-height: 10px; color: #555; opacity: 0.75; width: 120px; height: 150px;  } 
+.legend i { width: 15px; height: 18px; float: left; margin-right: 8 px; opacity: 1; }</style>
+
+</head>
+<body>
+
+
+<div id='map'></div>
+<script type="text/javascript" src="data/edos_manglar_2020.js"></script>
+<script type="text/javascript" src="data/estados_0.js"></script>
+<script type="text/javascript" src="data/poly_wet_mask_geo_simplificado_0009_0.js"></script>
+<script type="text/javascript" src="data/poly_wet_mask_geo_0.js"></script>
+<script type="text/javascript" src="data/poly_tend_Mean2020_geo_0.js"></script>
+
+
+
+
+<script type="text/javascript">
+
+    var map = L.map('map', {
+	                zoomSnap: 0.25,
+                    minZoom:2.5, // Alejamiento máximo
+                    maxZoom:13, //Acercamiento máximo
+                    zoomControl: false
+					}).setView([23.4, -98.70], 6); //Los dos primeros valores cambian el punto central inicial del mapa, el tercer valor cambia el zoom inicial
+
+  var zoom_bar = new L.Control.ZoomBar({ position: 'topleft' }).addTo(map);
+
+	L.tileLayer('https://api.mapbox.com/styles/v1/kennett01/ckzspelzv000h15lcjqooqfpw/tiles/256/{z}/{x}/{y}@2x?access_token=pk.eyJ1Ijoia2VubmV0dDAxIiwiYSI6ImNrMnNrOTg3dzBiNWEzZHFjeW9oc292ZTUifQ.hWrOvbRd_Tp4suqaeZO0-Q', {
+		maxZoom: 10,
+		attribution: '© <a href="https://www.mapbox.com/">Mapbox</a>'
+	}).addTo(map);
+	
+
+		// control that shows state info on hover
+	var info = L.control();
+	
+
+	info.onAdd = function (map) {
+		this._div = L.DomUtil.create('div', 'info');
+		this.update();
+		return this._div;
+	};
+
+		info.update = function (props) {
+		this._div.innerHTML = '<h4>Superficie de manglares</h4>' +  (props ?
+			'<b>' + props.NOM_ENT + '</b><br/><br/>' + '<b>'+'2020: '+'</b> '+props.man2020+ ' ha'+ '<br />' +'<b>'+'2015: '+'</b> '+props.man2015+ ' ha'+ '<br />' +'<b>'+'2010: '+ '</b> '+props.man_2010+' ha'+ '<br />' +'<b>'+'2005: '+ '</b> '+props.man_2005+' ha'+ '<br />' +'<b>'+props.inicio+': ' +'</b> '+props.man_7080+' ha'
+			: 'Pasa el puntero sobre un estado con manglar');0
+	};
+
+	info.addTo(map);
+
+
+	function highlightFeature(e) {
+		var layer = e.target;
+
+		layer.setStyle({
+			weight: 1.5,
+			color: '#878787',
+			dashArray: '',
+			fillOpacity: 0.0
+		});
+
+		if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) {
+			layer.bringToFront();
+		}
+
+		info.update(layer.feature.properties);
+	}
+
+var geojson;
+
+	function resetHighlight(e) {
+		geojson.resetStyle(e.target);
+		info.update();
+	}
+
+	function zoomToFeature(e) {
+		map.fitBounds(e.target.getBounds());
+	}
+
+	function onEachFeature(feature, layer) {
+		layer.on({
+			mouseover: highlightFeature,
+			mouseout: resetHighlight,
+            rinseOnHover: true,
+			click: zoomToFeature
+		});
+	}
+
+	geojson = L.geoJson(json_estados_0, {
+		style: style,
+		onEachFeature: onEachFeature
+	}).addTo(map);
+
+//Código para modificar los créditos y link 
+map.attributionControl.addAttribution('Tendencias de humedales &copy; <a href="https://www.biodiversidad.gob.mx/monitoreo/smmm/extensionDist">CONABIO</a>');
+
+var legend = L.control({position: 'bottomright'});
+
+	legend.onAdd = function (map) {
+
+		var div = L.DomUtil.create('div', 'info legend');
+		div.innerHTML +='<p style="font-size:160;"><b>Mapa de tendencias<br> de humedad</b></p>';
+		div.innerHTML += '<i style="background: #267300"></i><p>&nbspTendencia cercana a 1</p>';
+		div.innerHTML += '<i style="background: #FFFF00"></i><p>&nbspTendencia cercana a 0</p>';
+		div.innerHTML += '<i style="background: #A80000"></i><p>&nbspTendencia negativa</p>';
+		div.innerHTML += '<i style="background: #2AAAFF"></i><p>&nbspCuerpos de agua</p>';
+		
+		div.innerHTML += '<i style="background: #C3C3C3"></i><p>&nbspEstados de la república &nbspmexicana</p>';
+		
+		return div;
+	};
+
+	legend.addTo(map);
+
+
+
+	
+
+	var waterbodies= new L.geoJson(json_poly_wet_mask_geo_simplificado_0009_0, {
+	
+							fillColor: "#2AAAFF",
+							 opacity: 1,
+							 fillOpacity: 0.75,
+							 color:"2AAAFF",
+							 weight: 1
+							 })
+.addTo(map);
+
+
+
+	var humedalessincambio= new L.geoJson(json_poly_wet_mask_geo_0, {
+	
+							fillColor: "#6699CD",
+							 opacity: 1,
+							 fillOpacity: 0.75,
+							 color:"6699CD",
+							 weight: 1
+							 })
+.addTo(map);
+
+
+	function getColor(d) {
+	    return d > 0 ? '#267300' :
+				d > -1 ? '#FFFF00' :
+				d < 0 ? '#A80000' :
+					    'rgba(0,0,0,0)';
+	}
+
+	
+	
+function style(feature) {
+		return {
+			weight: 0.4,
+			opacity: 1,
+			color: getColor(feature.properties.gridcode),
+			fillOpacity: 1,
+			fillColor: getColor(feature.properties.gridcode)
+		};
+	}
+
+
+	var tendenciahumedales= new L.geoJson(json_poly_tend_Mean2020_geo_0, {
+					style: style
+		})
+
+	map.on('zoomend', function() {
+		if (map.getZoom() <6){
+		map.removeLayer(tendenciahumedales);
+	}
+		else {
+		map.addLayer(tendenciahumedales);
+    }	 //all layers are to be switched on, when zoom level reach 10
+   });
+
+var marker2 = L.marker([18.57662401453212, -92.17714259665728],{}).addTo(map);
+ marker2.on('click', function(e) {
+      map.setView(e.latlng, 16);      
+})
+
+var baseLayers = {
+		'Cuerpos de agua': waterbodies
+	};
+
+
+	
+var overlays = {
+		'Tendencia de humedad': tendenciahumedales,
+		'Humedales sin cambio': humedalessincambio
+	};
+
+	var layerControl = L.control.layers(baseLayers, overlays).addTo(map);
+
+
+</script>
+
+
+
+</body>
+</html>
+

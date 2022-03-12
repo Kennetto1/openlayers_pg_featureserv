@@ -1,0 +1,4 @@
+Para fines de visualización la capa de distribución de manglares manglares está exagerada, el mapa se puede consultar y descargar en el geoportal de la CONABIO. 
+http://www.conabio.gob.mx/informacion/gis/?vns=gis_root/biodiv/monmang/bimagdmo/mx_man20gw
+
+ 
